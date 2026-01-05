@@ -38,37 +38,14 @@ export enum ProcessingState {
 }
 
 export interface AuditReport {
-  doctorName: string;
-  specialty: string;
-  overallHealth: number; // 0-100
-  clinicalSummary: string;
-  
-  // SEÇÃO 1: A TRIAGEM
-  triage: {
-    score: number;
-    status: 'CRITICAL' | 'STABLE' | 'HEALTHY';
-    diagnosis: string; // Metaphorical description (e.g., "Joint Stiffness")
+  domain: string;
+  overallScore: number;
+  summary: string;
+  resources: {
+    title: string;
+    score: number; // 0-100
+    status: 'Excellent' | 'Good' | 'Fair' | 'Poor';
     details: string;
-  };
-
-  // SEÇÃO 2: EXAME DE IMAGEM
-  imaging: {
-    score: number;
-    status: 'AMATEUR' | 'PROFESSIONAL' | 'AUTHORITY';
-    observation: string; // Analysis of visual trust
-    detectedTags: string[]; // e.g., "Generic", "Doctor"
-  };
-
-  // SEÇÃO 3: COMPETITIVIDADE (Raio-X)
-  marketXray: {
-    competitorComparison: string; // "Dr. X is taking your patients"
-    lostTerritory: string; // Description of market share loss
-  };
-
-  // SEÇÃO 4: A PRESCRIÇÃO
-  prescription: {
-    immediateAction: string;
-    adHeadlines: string[];
-    prognosis: string; // Final impact phrase
-  };
+    recommendation: string;
+  }[];
 }
