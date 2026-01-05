@@ -180,50 +180,85 @@ export const performMapsQuery = async (query: string): Promise<string> => {
 };
 
 /**
- * Generates a comprehensive Site Audit Report using Search Grounding and JSON Schema
+ * Generates the "OrtoAudit" Report with strict medical persona
  */
 export const generateSiteAudit = async (url: string): Promise<AuditReport> => {
   try {
+    const systemInstruction = `
+      Você é o "OrtoAudit AI", um consultor de elite em Marketing Médico especializado em Ortopedia e Traumatologia.
+      Sua função é transformar dados técnicos de sites em um "Diagnóstico Clínico Digital".
+      
+      DIRETRIZES DE TOM E LINGUAGEM:
+      1. Metáforas Médicas Obrigatórias: Nunca use termos técnicos de TI isolados.
+         - Site Lento = "Paciente com mobilidade reduzida", "Articulação travada" ou "Isquemia digital".
+         - Sem Mobile/Responsivo = "Ambiente sem acessibilidade" ou "Barreira arquitetônica".
+         - Erro de Segurança/Vírus = "Baixa imunidade" ou "Risco de infecção hospitalar".
+         - SEO Fraco = "Invisibilidade clínica", "Sintoma silencioso" ou "Prognóstico reservado".
+      2. Autoridade: Fale de médico para médico ("Colega"). Seja "cirúrgico" nas críticas.
+      3. Foco em High-Ticket: Direcione a solução para Cirurgias (Próteses, Robótica) e não consultinhas baratas.
+      
+      O PROTOCOLO (SEÇÕES):
+      1. TRIAGEM (Performance & Segurança): Analise velocidade e segurança.
+      2. EXAME DE IMAGEM (Branding): Analise se as fotos passam confiança ou são banco de imagem genérico.
+      3. RAIO-X DO MERCADO (Competitividade): Cite concorrentes locais e perda de território.
+      4. PRESCRIÇÃO (Plano): 3 Headlines de Ads e ação imediata.
+    `;
+
+    const userPrompt = `
+      Analise o site: ${url}.
+      Use o Google Search para encontrar:
+      1. O nome do médico e especialidade exata.
+      2. Concorrentes diretos na mesma cidade/região.
+      3. Detalhes reais sobre a performance, reputação e imagens usadas no site.
+
+      Gere um relatório JSON estrito seguindo o schema fornecido.
+    `;
+
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Perform a comprehensive technical and business audit of the website: ${url}.
-      Use Google Search to find real details about this site's performance, reputation, technology stack, and content.
-      
-      Generate a report with EXACTLY 12 distinct resources/sections:
-      1. SEO Analysis
-      2. Performance Metrics (Core Web Vitals estimate)
-      3. Mobile Responsiveness
-      4. Accessibility (A11y)
-      5. UI/UX Design Quality
-      6. Security & Trust (SSL, Reputation)
-      7. Content Quality & Relevance
-      8. Technology Stack
-      9. Social Media Presence
-      10. Market Positioning / Competitors
-      11. Monetization Strategy
-      12. Final Verdict
-      
-      Return the data in strict JSON format.`,
+      contents: userPrompt,
       config: {
+        systemInstruction: systemInstruction,
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            domain: { type: Type.STRING },
-            overallScore: { type: Type.NUMBER, description: "0 to 100" },
-            summary: { type: Type.STRING },
-            resources: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  title: { type: Type.STRING },
-                  score: { type: Type.NUMBER, description: "0 to 100" },
-                  status: { type: Type.STRING, enum: ["Excellent", "Good", "Fair", "Poor"] },
-                  details: { type: Type.STRING },
-                  recommendation: { type: Type.STRING }
-                }
+            doctorName: { type: Type.STRING },
+            specialty: { type: Type.STRING },
+            overallHealth: { type: Type.NUMBER, description: "0 a 100" },
+            clinicalSummary: { type: Type.STRING, description: "Resumo clínico do estado digital usando metáforas." },
+            triage: {
+              type: Type.OBJECT,
+              properties: {
+                score: { type: Type.NUMBER },
+                status: { type: Type.STRING, enum: ["CRITICAL", "STABLE", "HEALTHY"] },
+                diagnosis: { type: Type.STRING, description: "Metáfora médica para a velocidade/segurança." },
+                details: { type: Type.STRING }
+              }
+            },
+            imaging: {
+              type: Type.OBJECT,
+              properties: {
+                score: { type: Type.NUMBER },
+                status: { type: Type.STRING, enum: ["AMATEUR", "PROFESSIONAL", "AUTHORITY"] },
+                observation: { type: Type.STRING, description: "Análise se as imagens passam confiança cirúrgica." },
+                detectedTags: { type: Type.ARRAY, items: { type: Type.STRING } }
+              }
+            },
+            marketXray: {
+              type: Type.OBJECT,
+              properties: {
+                competitorComparison: { type: Type.STRING, description: "Comparação com concorrentes reais." },
+                lostTerritory: { type: Type.STRING, description: "Gatilho de perda de pacientes para concorrentes." }
+              }
+            },
+            prescription: {
+              type: Type.OBJECT,
+              properties: {
+                immediateAction: { type: Type.STRING, description: "Ação cirúrgica imediata no site." },
+                adHeadlines: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3 Headlines focadas em dor/cirurgia." },
+                prognosis: { type: Type.STRING, description: "Frase de impacto final convidando para a gestão." }
               }
             }
           }
@@ -236,7 +271,7 @@ export const generateSiteAudit = async (url: string): Promise<AuditReport> => {
     
     return JSON.parse(jsonText);
   } catch (error) {
-    console.error("Site Audit Error:", error);
+    console.error("OrtoAudit Error:", error);
     throw new Error("Failed to audit website.");
   }
 };
