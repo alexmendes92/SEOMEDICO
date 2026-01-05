@@ -1,0 +1,5 @@
+{
+  "name": "OmniCloud AI Suite",
+  "description": "A unified AI dashboard leveraging Gemini to simulate Cloud Vision, Translation, NLP, and Business Intelligence tools in a single interface.",
+  "requestFramePermissions": []
+}
